@@ -1,5 +1,11 @@
 # UltraOS
 
+---
+
+**Note**: Project needs to update. Currently `cargo` fails to build due to version issues (`features`, `edition2021`). This has a dirty fix by adding the `cargo-features = ["edition2021"]` to the `zero-0.1.3` package. Will fix this soon.
+
+---
+
 UltraOS: A **RISC-V multicore operating system** that is written by Rust language in qemu and k210 platform.
 
 Currently, due to compatibility issues, we have updated the version management of the project and **locked** the toolchain and important external libraries. 
