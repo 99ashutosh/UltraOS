@@ -1,122 +1,150 @@
 # UltraOS
 
-拥有友好代码和详细文档的Rust编写的基于RISC-V64的多核操作系统UltraOS，支持qemu和k210平台运行。
-
 UltraOS: A **RISC-V multicore operating system** that is written by Rust language in qemu and k210 platform.
 
-当前，由于兼容问题，我们更新了项目的版本管理，将工具链以及重要的外部库进行了**锁定**。需要注意的是，最后的展示结果将会出现**部分错误**，这是正常的，因为项目人员技术水平问题，顾此失彼，支持了更高级的功能，但并未进行回归测试保证全方面功能正确。但是已知问题都是容易解决的，不会对架构及其实现产生影响。
+Currently, due to compatibility issues, we have updated the version management of the project and **locked** the toolchain and important external libraries. 
 
-------------------------------------------------------------------------
-移步到 https://gitee.com/LoanCold/ultraos_backup 拉取完整的代码，并且在那个gitee仓库里保存有我们开发的全过程commits和21个不同的分支，感谢支持！但是，gitee上并不会与本Github项目进行代码同步，本项目为最终维护项目。
-
-Complete code repository is at https://gitee.com/LoanCold/ultraos_backup. However, the source code there is not sync. The Github repository here is the official version that will possibly be updated later. 
-
-------------------------------------------------------------------------
-### 联系我们 Contact Us
-
-李程浩：[loancold@qq.com](mailto:loancold@qq.com)
-
-宫浩辰：[1527198893@qq.com](mailto:1527198893@qq.com)
-
-任翔宇：[lewaysfca73@gmail.com](mailto:lewaysfca73@gmail.com)
+It should be noted that **partial errors** will appear in the final display results. This is normal, because the technical level of the project personnel is insufficient, and more advanced functions are supported, but no regression test is performed to ensure all aspects of functions. correct. But the known issues are easy to fix and have no impact on the architecture and its implementation.
 
 
-### 快速上手 Quick Start
+### Contact Us
 
-确保您已经安装`qemu-system-riscv64`以及`Rust`组件。在根目录下，输入以下命令。
+Li Chenghao：[loancold@qq.com](mailto:loancold@qq.com)
 
-``` shell
+Gong Haochen：[1527198893@qq.com](mailto:1527198893@qq.com)
 
-make env # Install required environment. If it succeeds, you don't need to do it again.
-make run # Prepare neccessaray components and compilation, then run UltraOS in qemu.
-# Later you will enter UltraOS shell, then type:
-root@UltraOS: / >>run_testsuites
+Ren Xiangyu：[lewaysfca73@gmail.com](mailto:lewaysfca73@gmail.com)
+
+
+### Quick Start
+
+Make sure you have installed `qemu-system-riscv64` and `Rust` components. 
+
+Clone the repo
+
+```shell
+git clone https://github.com/xiyurain/UltraOS
+cd UltraOS
 ```
 
-然后你将会看到UltraOS自动运行21年首届中国本科生OS竞赛内核赛道初试的测试样例。
+In the root directory, enter the following commands:
 
-如果你的电脑没有安装`OpenSBI`，或许会出现`opensbi-riscv64-virt-fw_jump.bin`文件无法找到的问题。此时你可以修改`codes/os/Makefile line 25-27` 挑选其他SBI使用。但是功能将不会正常，因为老版本RustSBI无法启用浮点，无法通过许多测试，新版本则存在兼容问题。但是k210上不存在这种情况，可放心使用。
+- Prep the environment. If it succeeds, you don't need to do it again.
+
+```shell
+make env
+```
+- Compile and Run in `qemu`
+
+```shell
+make run
+```
+
+If `make` succeeds the you should see shell:
+
+```shell
+root@UltraOS: / >>
+```
+
+---
+
+**Note**: 
+
+If `OpenSBI` is not installed on your computer, there may be a problem that the `opensbi-riscv64-virt-fw_jump.bin` file cannot be found. At this point you can modify `codes/os/Makefile` at line 25-27 to select other SBIs to use.
+
+But the functionality won't work because older versions of RustSBI don't have floating point enabled and fail many tests, and newer versions have compatibility issues. 
+
+However, this situation does not exist on the `k210`, so you can use it with confidence.
+
 ``` Makefile
 	BOOTLOADER := default
 #	BOOTLOADER := ../bootloader/$(SBI)-$(BOARD).bin # If you have no OpenSBI, try RustSBI.
 #	BOOTLOADER := ../bootloader/$(SBI)-$(BOARD)-new.bin # If you want to use new RustSBI, try this.
 ```
 
-如果你想修改Shell，见`codes/user/src/bin/user_shell.rs`。如果你想修改内核，见`codes/os/src/main.rs`。
+---
 
-### 运行
+If you want to modify the shell, see `codes/user/src/bin/user_shell.rs`.
+If you want to modify the kernel, see `codes/os/src/main.rs`.
 
-
-根目录下Makefile提供了两个命令。
+### Running the OS
 
 Makefile provides two make command under the root directory.
 
-> make all
+1. This command will generate a complete binary kernel file, which can be burned to the k210 development board. This command will compile the kernel
+file, and after splicing with SBI, a naked running file k210.bin will be generated and placed in the root directory.
 
-该命令将生成完整的二进制内核文件，可烧录至k210开发板上。该命令会编译内核文件，与SBI拼接后生成裸运行文件k210.bin放置在根目录。
+```shell
+make all
+```
 
-This would build the kernel binary file, which can run on the Kendryte K210 embedded SoC.
+2. This command will run UltraOS directly on `qemu`. First it will compile the test code we have prepared, and then burn its program and the official test file given by the operating system competition we participated in to the file image we prepared, and then start compiling the kernel file and splicing it with SBI Afterwards, a naked running file is generated and run through `qemu`. Note that although we merged with RustSBI, we did not use it in the end, but replaced it with OpenSBI, because RustSBI did not enable floating-point operations under qemu, and continued to use RustSBI (UltraOS customized version) on the k210 platform.
 
-> make run
+```shell
+make run
+```
 
-该命令将直接在qemu上运行UltraOS。该命令会首先编译我们准备好的测试代码，之后将其程序以及我们所参加的操作系统大赛给出的官方测试文件一同烧录到我们准备的文件镜像中，然后开始编译内核文件，与SBI拼接后生成裸运行文件，通过qemu运行。注意，我们虽然与RustSBI进行合并，但是最后我们并没有使用它，而是换成了OpenSBI，因为RustSBI在qemu下没有开启浮点运算，在k210平台则继续使用了RustSBI（UltraOS定制版本）。
+This command will generate a kernel file and run UltraOS directly on the k210. However, in order to be able to run more programs, **please insert an sd card into the k210, and place preliminary files and programs in it**, and UltraOS will use it as an external memory controlled by the file system. At the same time, it should be noted that in order to support the game, our UltraOS will run on its own
 
-This would run the OS kernel directly on Qemu.
+```shell
+# Insert an sdcard, check if it shows up as /dev/sdb1, if not modify the script mkfs.sh and run it.
+make run BOARD=k210
+```
 
-> make run BOARD=k210
 
-该命令将生成内核文件，并且直接在k210上运行UltraOS。但是，为了能够运行更多的程序，请在k210上插入sd卡，并在里面放置预备文件和程序，UltraOS会将其作为文件系统控制的外存进行使用。同时，需要注意的是，为了支持比赛的进行，我们的UltraOS会自行运行
+### Monitoring the OS
 
-This command will build the kernel binary file and run it directly on the Kendryte K210 embedded SoC.
-
-> make gdb
-
-> make monitor
-
-这一组命令分别在两个窗口运行，即可启动gdb调试。
+The same `Makefile` provides debugging options.
 
 Run this two command seperately in two shell, then the GDB debugging can be start.
 
+```shell
+# in the first terminal
+make gdb
+# in the second terminal
+make monitor
+```
 
-### 项目人员
+### Project Staff
 
-来自哈尔滨工业大学（深圳）
+From Harbin Institute of Technology (Shenzhen)
 
-李程浩（队长）：主要负责多核支持，进程管理以及内存一致性管理，用户程序支持，开发和测试环境搭建。
+Li Chenghao (Captain): Mainly responsible for multi-core support, process management and memory consistency management, user program support, development and test environment construction.
 
-宫浩辰：主要负责FAT和EXT2-like虚拟文件系统及其内核支持，联合调试，k210开发板以及SBI支持，多核支持。
+Gong Haochen: Mainly responsible for FAT and EXT2-like virtual file systems and their kernel support, joint debugging, k210 development board and SBI support, multi-core support.
 
-任翔宇：主要负责内存管理以及优化，trap设计。
-
-### 项目特征
-
-- Rust语言
-- 多核操作系统
-- 支持59条系统调用
-- 高性能优化：内存弱一致性优化、lazy与CoW、文件系统双文件块缓存等优化等机制
-- 信号机制：进程支持进程信号软中断。
-- 支持C语言程序和Rust语言用户程序编写和运行（提供回归测试基础）
-- FAT32虚拟文件系统
-- 混合调试工具：Monitor（结合静态宏打印以及动态gdb特性）
-- 详细项目文档、开发过程支持以及理解友好型代码构造和注释
-
-### 文件包阅读说明
+Ren Xiangyu: Mainly responsible for memory management and optimization, trap design.
 
 
-- doc：项目文档
-- codes：开发代码
-  - bootloader：使用开发者洛佳的K210和qemu版本的RustSBI二进制文件（本项目对源码进行了改动，生成的二进制文件不为官方版本）
-  - dependency：本地库依赖
-  - fat32-fuse：构建fat32文件系统
-  - os：kernel代码
-  - riscv-syscalls-testing：官方评测程序
-  - simple_fat32：fat32文件系统，隶属于kernel
-  - user：用户程序相关
+### Features
 
-### 感谢与声明
+- Rust language
+- Multi-core operating system
+- Support 59 system calls
+- High performance optimization: memory weak consistency optimization, lazy and CoW, file system double file block cache and other optimization mechanisms
+- Signal mechanism: process supports process signal soft interrupt.
+- Support C language program and Rust language user program writing and running (provide regression testing basis)
+- FAT32 virtual file system
+- Hybrid debugging tool: Monitor (combined with static macro printing and dynamic gdb features)
+- Detailed project documentation, development process support, and comprehension-friendly code constructs and comments.
 
-本项目使用了洛佳等开发者的[RustSBI](https://github.com/rustsbi/rustsbi) 2021.03.26版本，以及吴一凡等开发者的[rCoreTutorial-v3](https://github.com/rcore-os/rCore-Tutorial-v3) 2021.03.26版本。
+### Files and Instructions
 
-同时感谢哈尔滨工业大学（深圳）的黎庚祉同学给予的帮助和灵感，以及夏文老师和江仲鸣老师在进度上的跟踪。
+- doc: project documentation
+- codes: development codes
+  - bootloader: Use developer Luo Jia's K210 and qemu version of RustSBI binary files (the source code has been changed in this project, and the generated binary files are not official versions)
+  - dependency: local library dependency
+  - fat32-fuse: build fat32 file system
+  - os: kernel code
+  - riscv-syscalls-testing: official evaluation program
+  - simple_fat32: fat32 file system, which belongs to the kernel
+  - user: user program related
+  
+  
+### Thanks
 
-本项目使用GPL3.0协议，欢迎开发者使用该项目进行学习。
+This project uses the [RustSBI](https://github.com/rustsbi/rustsbi) version 2021.03.26 of Luo Jia and other developers, and the [rCoreTutorial-v3](https://github.com /rcore-os/rCore-Tutorial-v3) 2021.03.26 version.
+
+At the same time, I would like to thank Li Gengzhi from Harbin Institute of Technology (Shenzhen) for his help and inspiration, as well as Mr. Xia Wen and Mr. Jiang Zhongming for their progress tracking.
+
+This project uses the GPL3.0 agreement, and developers are welcome to use this project for learning.
