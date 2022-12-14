@@ -1,17 +1,17 @@
-# UltraOS项目文档
+# UltraOS project documentation
 
-该目录下含有UltraOS的设计、开发以及调试文档。
+This directory contains UltraOS design, development and debugging documents.
 
 
-#### 文件包阅读方法
+#### Contents
 
-UltraOS文档将从一个宏观的角度，尽可能抛开代码的具体实现，描述UltraOS的架构设计。而其他的各大Markdown文件，将从细节的角度触发，描述具体的实现，会将开发过程、代码设计、数据结构、一些迭代过程的思考、学习的心得等等包括在内。
+The UltraOS document will describe the architecture design of UltraOS from a macro perspective, leaving aside the specific implementation of the code as much as possible. The other major Markdown files will be triggered from the perspective of details to describe the specific implementation, including the development process, code design, data structure, some iterative process thinking, learning experience, etc.
 
-因此，如果想要一览UltraOS的设计，建议阅读UltraOS文档.pdf，如果只是想要借鉴或者找到具体的实现，则需要阅读Markdown文件以及对应的具体代码。代码也提供了必要的注释，以供参考。
+Therefore, if you want to have an overview of the design of UltraOS, it is recommended to read the UltraOS document.pdf. If you just want to learn from it or find a specific implementation, you need to read the Markdown file and the corresponding specific code. The code also provides the necessary comments for reference.
 
-#### 文件包结构
+#### Structure
 
-基本上，我们以不同的模块来进行文件的组织，在重要文件夹下我们通常会加入各部分的细致文档对该模块进行细致介绍。
+Basically, we organize files in different modules, and we usually add detailed documents of each part under important folders to introduce the modules in detail.
 
 - 测试.md：UltraOS为支持测试程序所作出的努力和思考。
 - 调试.md + 问题.md：UltraOS所遇到的非常严重或者非常隐蔽的问题。
@@ -29,3 +29,20 @@ UltraOS文档将从一个宏观的角度，尽可能抛开代码的具体实现�
 - **UltraOS文档.pdf（重要）**：UltraOS的设计需求、理念、架构、特点、展望等全方位详细文档。
 - UltraOS性能测试表.xlsx：UltraOS开发过程中的性能测试。
 - UserSupportThinking.md：UltraOS对于用户态支持所作的努力和思考。
+
+- Test.md: The efforts and thinking made by UltraOS to support the test program.
+- debug.md + problem.md: Very serious or very hidden problems encountered by UltraOS.
+- Device Management.md: UltraOS I/O framework design and rCore-Tutorial-v3 study notes and integration of related concepts and materials.
+- System call support.md: some simple implementation descriptions of system calls worth recording.
+- ConsistencyModel.md: Issues related to weak memory consistency of RISC-V and related processing of UltraOS.
+- FAT32.md: UltraOS' efforts and thinking on building the FAT32 file system, as well as design and optimization methods.
+- fs_kernel.md: The services and system calls provided by the UltraOS file system to the kernel.
+- Lazy_Alloc.md: Lazy performance test of UltraOS.
+- Mointor.md: Description of the UltraOS hybrid debugging tool Monitor.
+- MultiCore.md: The efforts and thinking made by UltraOS to support multi-core operation, as well as the problems encountered and solutions.
+- Optimization.md: The efforts and thinking made by UltraOS to improve performance, as well as the problems and solutions encountered.
+- Shell.md: UltraOS user program Shell support.
+- Signal.md: UltraOS signal mechanism.
+- **UltraOS document.pdf (important)**: UltraOS design requirements, concepts, architecture, features, prospects and other comprehensive and detailed documents.
+- UltraOS performance test table.xlsx: Performance test during UltraOS development.
+- UserSupportThinking.md: UltraOS' efforts and thinking on user mode support.
