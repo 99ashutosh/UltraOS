@@ -1,4 +1,4 @@
-#### 比赛的系统调用
+#### System race calls
 
 |      | 系统调用号                | 描述                     | 完成情况 |
 | ---- | ------------------------- | ------------------------ | -------- |
@@ -18,21 +18,21 @@
 | 15   | #define SYS_mount 40      |                          | fin      |
 | 16   | #define SYS_fstat 80      |                          | fin      |
 
-#### 当前工作路径的设计
+#### The design of the current working path
 
-在rCore里，在进程控制块存储了当前路径的字符串，以栈的形式操作
+In rCore, the string of the current path is stored in the process control block and operated in the form of a stack
 
-这样的方法可以适应不同的文件系统，并且也利于返回当前工作路径。如果进程控制块存储的是当前路径的虚拟文件指针，那么用户获得路径就要回溯，但是，.. 并不指向上级目录的目录项，而是直接指向目录的簇，因此无法获得上级的文件名，这会大大降低效率。
+Such a method can adapt to different file systems, and is also beneficial to return the current working path. If the process control block stores the virtual file pointer of the current path, then the user must backtrack to obtain the path. However, .. does not point to the directory entry of the upper-level directory, but directly points to the cluster of the directory, so the upper-level file name cannot be obtained , which greatly reduces the efficiency.
 
-因此，我们也决定采用这种方法，在TCB存储字符串。
+Therefore, we also decided to adopt this approach, storing strings in the TCB.
 
-#### fd表的设计
+#### Design of fd table
 
-之前以Rust的dyn将实现了File特性的引用存于fd_table
+Previously used Rust's dyn to store references that implement the File feature in fd_table
 
-open_at基于fd获取路径，而File特性并没有这样的接口。因此需要改变TCB的存储对象。
+open_at obtains the path based on fd, but the File feature does not have such an interface. Therefore, it is necessary to change the storage object of the TCB.
 
-为此设计了文件枚举类，其结构如下：
+A file enumeration class is designed for this purpose, and its structure is as follows:
 
 ```rust
 pub enum FileClass {
@@ -41,19 +41,19 @@ pub enum FileClass {
 }
 ```
 
-Rust也采用了类似的设计，但是他们的stdio也为文件，文件对象为串口设备（大概
+Rust also adopts a similar design, but their stdio is also a file, and the file object is a serial device (probably
 
-我们对普通文件和抽象实现的File接口并不一致，因此将他们区分处理
+We are not consistent with the File interface of ordinary files and abstract implementations, so they are treated separately
 
-为了支持设备文件，我们对还File trait进行了扩展，新增ioctl方法
+In order to support device files, we have extended the File trait and added the ioctl method
 
-#### 部分系统调用实现
+#### Implementation of some system calls
 
-文件系统大部分系统调用都是易于实现的，难点主要在于文件信息获取(fstat、getdent)以及挂载。
+Most system calls of the file system are easy to implement, and the difficulty lies in obtaining file information (fstat, getdent) and mounting.
 
 ##### UserBuffer
 
-许多文件系统的syscall会传入用户的buffer。难点在于，buffer可能是跨页的，因此不能仅对buffer指针强转然后操作。为此我们定义了UserBuffer结构：
+Many filesystem syscalls pass user buffers. The difficulty is that the buffer may span pages, so you cannot just force the buffer pointer and then operate it. For this we define the UserBuffer structure:
 
 ```Rust
 pub struct UserBuffer {
@@ -67,16 +67,16 @@ impl UserBuffer {
 }
 ```
 
-其为u8数组引用的向量，这样在内核操作的时候可以将存在于不同页的buffer分离存储。
+It is a vector referenced by the u8 array, so that buffers that exist in different pages can be stored separately during kernel operations.
 
-read/write等系统调用都使用了该结构。
+This structure is used by system calls such as read/write.
 
 ##### getdent/fstat
 
-​		这两个系统调用比较类似，也有共同的难点。对于这两个系统调用，用户会传入一个buffer的指针，内核需要以结构体的形式填入需要的信息。难点在于，buffer可能是跨页的，因此不能通过页表翻译而直接填写，而是要像read/write一样使用UserBuffer。
+​ These two system calls are similar and have common difficulties. For these two system calls, the user will pass in a buffer pointer, and the kernel needs to fill in the required information in the form of a structure. The difficulty is that the buffer may span pages, so it cannot be filled directly through page table translation, but UserBuffer must be used like read/write.
 
-​		另一个问题在于，这两个系统调用要使用结构体，且是与C语言实现的用户程序共用结构体。幸运的是，Rust提供了#[repr(C)]标记以支持C格式的结构体。
+​ Another problem is that these two system calls use structures, which are shared with user programs implemented in C language. Fortunately, Rust provides the #[repr(C)] tag to support C-style structs.
 
-##### 挂载
+##### mount
 
-​		我们的操作系统暂不支持设备管理，事实上，目前也仅支持SD Card这一块设备。目前我们所作的就是维护挂载表。
+​Our operating system does not support device management for now. In fact, it only supports SD Card at present. All we do so far is maintain the mount table.
